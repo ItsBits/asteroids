@@ -9,6 +9,7 @@
 #include "Shader.hpp"
 #include "Ship.hpp"
 #include "Projectile.hpp"
+#include "Polygon.hpp"
 
 int main()
 {
@@ -30,25 +31,25 @@ int main()
 
     shader.use();
 
-    GLint offset_uniform = glGetUniformLocation(shader.id(), "offset");
-    GLint count_uniform = glGetUniformLocation(shader.id(), "size");
-    GLint col_uniform = glGetUniformLocation(shader.id(), "col");
+    GLint offset_uniform = glGetUniformLocation(shader.id(), "translation");
+    GLint scale_uniform = glGetUniformLocation(shader.id(), "scale");
+    GLint col_uniform = glGetUniformLocation(shader.id(), "color");
     GLint rotation_uniform = glGetUniformLocation(shader.id(), "rotation");
 
     std::vector<Rock> rocks;
     constexpr size_t a_count = 6;
 
     for(int i = 0; i < a_count; ++i)
-        rocks.emplace_back(
-            (rng.get().x + 2.0f) / 14.0f, 10, rng,
-            rng.get(), rng.get(), 0.6f
+        rocks.emplace_back(rng,
+            (rng.get().x + 2.0f) / 14.0f, 10,
+            (rng.get() * 2.0f - 1.0f), (rng.get() * 2.0f - 1.0f) * 0.3f
         );
 
-    Ship ship{ 0.03f, 0.5f };
+    Ship ship{ 0.03f, 1.0f, 1.5f };
 
     std::vector<Projectile> projectiles;
 
-    float time_til_vulneable = 3.0f;
+    float time_til_vulneable = 3.0f; // TODO: move that to Ship class
 
     float score = 0.0f;
     float score_update = 0.0f;
@@ -66,7 +67,7 @@ int main()
         };
 
         // ship
-        ship.move(delta_time, 1.5f, 1.0f);
+        ship.move(delta_time);
         bool shot = ship.shoot(projectiles, rng, delta_time, 0.3f);
 
         if (shot)
@@ -120,7 +121,7 @@ int main()
 
         // check death
         time_til_vulneable -= delta_time;
-        if (time_til_vulneable < 0.0f)
+        if (time_til_vulneable < 0.0f/* && false*/)
         {
             for (auto & p : rocks) // TODO: fix this. it will sometimes miss because of tunneling issue (no swept AABB)
             {
@@ -133,10 +134,19 @@ int main()
             }
         }
 
-        ship.draw(offset_uniform, count_uniform, col_uniform, rotation_uniform, time_til_vulneable >= 0.0f, true);
+
+        const bool invincible = time_til_vulneable >= 0.0f;
+        if (invincible)
+            glUniform3f(col_uniform, 0.0f, 1.0f, 0.5f);
+        else
+            glUniform3f(col_uniform, 1.0f, 0.0f, 0.7f);
+
+        ship.draw(scale_uniform, rotation_uniform, offset_uniform);
+
         glUniformMatrix2fv(rotation_uniform, 1, 0, asteroid_rotation_matrix);
-        std::for_each(rocks.begin(), rocks.end(), [offset_uniform, count_uniform, col_uniform] (Rock & r) { r.draw(offset_uniform, count_uniform, col_uniform, true); });
-        std::for_each(projectiles.begin(), projectiles.end(), [offset_uniform, count_uniform, col_uniform] (Projectile & p) { p.draw(offset_uniform, count_uniform, col_uniform); });
+        std::for_each(projectiles.begin(), projectiles.end(), [offset_uniform, scale_uniform, col_uniform] (Projectile & p) { p.draw(offset_uniform, scale_uniform, col_uniform); });
+        glUniform3f(col_uniform, 1.0f, 1.0f, 1.0f);
+        std::for_each(rocks.begin(), rocks.end(), [offset_uniform, scale_uniform, col_uniform] (Rock & r) { r.draw(offset_uniform, scale_uniform); });
 
         if (score_update < 0.0f)
         {

@@ -10,7 +10,7 @@ set(SOURCE_FILES
         Keyboard.hpp
         ../gl3w/gl3w/build/src/gl3w.c
         Keyboard.cpp Rock.hpp Vec2.hpp
-        Shader.cpp Shader.hpp Vec2Gen.hpp AABB.hpp Ship.hpp Projectile.hpp)
+        Shader.cpp Shader.hpp Vec2Gen.hpp AABB.hpp Ship.hpp Projectile.hpp Polygon.hpp Vec2.cpp AABB.cpp)
 add_executable(asteroids ${SOURCE_FILES})
 
 

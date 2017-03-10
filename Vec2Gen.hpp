@@ -12,8 +12,8 @@ public:
     ) :
         generator{ seed },
         // according to standard this is a half range, but implementations use inclusive range
-        x_distribution{ -1.0f, 1.0f },
-        y_distribution{ -1.0f, 1.0f }
+        x_distribution{ 0.0f, 1.0f },
+        y_distribution{ 0.0f, 1.0f }
     {}
 
     Vec2 get()

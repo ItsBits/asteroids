@@ -1,10 +1,10 @@
 #version 330 core
 
-out vec4 color;
+out vec4 result;
 
-uniform vec3 col;
+uniform vec3 color;
 
 void main()
 {
-    color = vec4(col.r, col.g, col.b, 1.0f);
+    result = vec4(vec3(color), 1.0f);
 }

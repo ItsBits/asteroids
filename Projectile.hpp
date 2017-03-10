@@ -6,6 +6,7 @@
 
 #include "Vec2.hpp"
 #include "AABB.hpp"
+#include "Polygon.hpp"
 
 class Projectile
 {
@@ -164,7 +165,7 @@ public:
         };
 
         // asteroid
-        glUniform1f(size_uniform, m_size);
+        glUniform2f(size_uniform, m_size, m_size);
         glUniform3f(col_uniform, 0.0f, 0.0f, 1.0f);
         glBindVertexArray(m_VAO);
         { const GLenum r = glGetError(); assert(r == GL_NO_ERROR); }
@@ -181,11 +182,11 @@ public:
     }
 
 private:
-    GLuint m_VAO, m_VBO;
-
+    GLuint  m_VAO, m_VBO; // TODO: move mesh out of this class, because it's the same all the time
     Vec2 m_position;
     Vec2 m_velocity;
     float m_size;
+    [[deprecated]]
     GLsizei m_vertex_count;
     float m_time_til_death;
 
