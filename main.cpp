@@ -91,37 +91,27 @@ int main()
 
         projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [] (Projectile & p) { return p.isDead(); }), projectiles.end());
 
-        /*Vec2 offs[]{
-            { -2.0f, -2.0f },
-            {  0.0f, -2.0f },
-            {  2.0f, -2.0f },
-            { -2.0f,  0.0f },
-            {  0.0f,  0.0f },
-            {  2.0f,  0.0f },
-            { -2.0f,  2.0f },
-            {  0.0f,  2.0f },
-            {  2.0f,  2.0f }
-        };*/
 
         std::vector<Rock> new_rocks;
 
-        for (auto & p : projectiles) // TODO: fix this. it will sometimes miss because of tunneling issue (no swept AABB)
+        for (auto & p : projectiles) // TODO: fix this. it will sometimes miss because of tunneling issue (no swept AABB) or should I call it good enough?
         {
             for (auto i = rocks.begin(); i != rocks.end(); ++i)
             {
-                if (AABB::intersect(p.boundingBox(), i->boundingBox()))
-                {
-                    score += 1.0f / (i->size() + 0.01f);
+                if (AABB::intersect(p.boundingBox(), i->boundingBox())) // broad-phase
+                    if (polygons_intersect(p.polygonSRT(), i->polygonSRT())) // narrow-phase
+                    {
+                        score += 1.0f / (i->size() + 0.01f);
 
-                    const auto new_rock = i->split(rng);
-                    if (std::get<0>(new_rock) >= 1) new_rocks.emplace_back(std::get<1>(new_rock));
-                    if (std::get<0>(new_rock) == 2) new_rocks.emplace_back(std::get<2>(new_rock));
+                        const auto new_rock = i->split(rng);
+                        if (std::get<0>(new_rock) >= 1) new_rocks.emplace_back(std::get<1>(new_rock));
+                        if (std::get<0>(new_rock) == 2) new_rocks.emplace_back(std::get<2>(new_rock));
 
-                    std::cout << new_rocks.size() << std::endl;
-                    rocks.erase(i);
-                    p.kill();
-                    break;
-                }
+                        std::cout << new_rocks.size() << std::endl;
+                        rocks.erase(i);
+                        p.kill();
+                        break;
+                    }
             }
         }
 
@@ -135,12 +125,13 @@ int main()
         {
             for (auto & p : rocks) // TODO: fix this. it will sometimes miss because of tunneling issue (no swept AABB)
             {
-                if (AABB::intersect(ship.boundingBox(), p.boundingBox()))
-                {
-                    score = -std::numeric_limits<float>::infinity();
-                    window.scheduleExit();
-                    break;
-                }
+                if (AABB::intersect(ship.boundingBox(), p.boundingBox())) // broad-phase
+                    if (polygons_intersect(ship.polygonSRT(), p.polygonSRT())) // narrow-phase
+                    {
+                        score = -std::numeric_limits<float>::infinity();
+                        window.scheduleExit();
+                        break;
+                    }
             }
         }
 
@@ -165,24 +156,26 @@ int main()
          * draw bounding boxes
          */
 
-        auto draw_aabb = [offset_uniform, scale_uniform, &aabb_polygon](const auto & element)
+        if (false)
         {
-            Vec2 position, size;
+            auto draw_aabb = [offset_uniform, scale_uniform, &aabb_polygon](const auto & element)
+            {
+                Vec2 position, size;
 
-            position_size_from_AABB(element.boundingBox(), position, size);
+                position_size_from_AABB(element.boundingBox(), position, size);
 
-            glUniform2f(scale_uniform, size.x, size.y);
-            glUniform2f(offset_uniform, position.x, position.y);
+                glUniform2f(scale_uniform, size.x, size.y);
+                glUniform2f(offset_uniform, position.x, position.y);
 
-            aabb_polygon.draw();
-        };
+                aabb_polygon.draw();
+            };
 
-        glUniform3f(col_uniform, 1.0f, 0.0f, 0.0f);
+            glUniform3f(col_uniform, 1.0f, 0.0f, 0.0f);
 
-        std::for_each(projectiles.begin(), projectiles.end(), draw_aabb);
-        std::for_each(rocks.begin(), rocks.end(), draw_aabb);
-        draw_aabb(ship);
-
+            std::for_each(projectiles.begin(), projectiles.end(), draw_aabb);
+            std::for_each(rocks.begin(), rocks.end(), draw_aabb);
+            draw_aabb(ship);
+        }
 
 
 
@@ -193,6 +186,8 @@ int main()
             std::cout << "Score: " << score << std::endl;
         }
         window.swapResizeClearBuffer();
+
+        // TODO: better timing
         //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         { const GLenum r = glGetError(); assert(r == GL_NO_ERROR); }

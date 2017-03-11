@@ -153,6 +153,20 @@ public:
         return m_polygon.vertices();
     }
 
+    //==========================================================================
+    std::vector<Vec2> polygonSRT() const
+    {
+        const auto & vertices = m_polygon.vertices();
+
+        std::vector<Vec2> result;
+        result.reserve(vertices.size());
+
+        for (const auto & v : vertices)
+            result.emplace_back(multiply(v, m_rotation_matrix) * m_size + m_position);
+
+        return result;
+    }
+
 private:
     Vec2 m_size;
     Vec2 m_position;

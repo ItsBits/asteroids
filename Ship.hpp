@@ -209,6 +209,20 @@ public:
         return std::make_tuple(false, Projectile{});
     }
 
+    //==========================================================================
+    std::vector<Vec2> polygonSRT() const
+    {
+        const auto & vertices = m_polygon.vertices();
+
+        std::vector<Vec2> result;
+        result.reserve(vertices.size());
+
+        for (const auto & v : vertices)
+            result.emplace_back(multiply(v, m_rotation_matrix) * m_size + m_position);
+
+        return result;
+    }
+
 private:
     float m_size; // TODO: generalize Object (AABB size position velocity rotation matrix...)
     Vec2 m_position;
