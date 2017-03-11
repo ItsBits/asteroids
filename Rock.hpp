@@ -55,6 +55,15 @@ public:
         );
 
         m_polygon.update(vertices);
+
+        // calculate symmetric AABB
+        std::vector<Vec2> polygon = m_polygon.vertices();
+        // scale
+        std::for_each(polygon.begin(), polygon.end(), [this](Vec2 & v){ v = v * m_size; });
+
+        const Vec2 size2 = AABB_to_size(compute_ABB_from_polygon(polygon));
+        m_bounding_box = AABB{ { -size2.x, -size2.y }, size2 }; // symmetric AABB
+
     }
 
     //==========================================================================
@@ -70,11 +79,13 @@ public:
         m_size    { other.m_size },
         m_position{ other.m_position },
         m_velocity{ other.m_velocity },
-        m_polygon { std::move(other.m_polygon) }
+        m_polygon { std::move(other.m_polygon) },
+        m_bounding_box { other.m_bounding_box }
     {
         other.m_size     = 0;
         other.m_position = Vec2{ 0.0f, 0.0f };
         other.m_velocity = Vec2{ 0.0f, 0.0f };
+        other.m_bounding_box = AABB{ Vec2{ 0.0f, 0.0f }, Vec2{ 0.0f, 0.0f } };
     }
 
     //==========================================================================
@@ -85,10 +96,13 @@ public:
         m_velocity = other.m_velocity;
 
         m_polygon = std::move(other.m_polygon);
+        m_bounding_box = other.m_bounding_box;
 
         other.m_size     = 0;
         other.m_position = Vec2{ 0.0f, 0.0f };
         other.m_velocity = Vec2{ 0.0f, 0.0f };
+
+        other.m_bounding_box = AABB{ Vec2{ 0.0f, 0.0f }, Vec2{ 0.0f, 0.0f } };
 
         return *this;
     }
@@ -114,8 +128,8 @@ public:
     AABB boundingBox() const
     {
         return {
-            { m_position.x - m_size, m_position.y - m_size },
-            { m_position.x + m_size, m_position.y + m_size }
+            m_bounding_box.getMin() + m_position,
+            m_bounding_box.getMax() + m_position
         };
     }
 
@@ -126,6 +140,12 @@ public:
         glUniform2f(translation_uniform, m_position.x, m_position.y);
 
         m_polygon.draw();
+    }
+
+    //==========================================================================
+    const std::vector<Vec2> & polygon() const
+    {
+        return m_polygon.vertices();
     }
 
 
@@ -161,5 +181,7 @@ private:
     Vec2 m_velocity;
 
     Polygon m_polygon;
+
+    AABB m_bounding_box;
 
 };

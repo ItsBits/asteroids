@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 #include "Vec2.hpp"
 
 struct AABB
@@ -40,3 +41,7 @@ private:
 AABB operator + (const AABB & aabb, const Vec2 & v);
 
 void position_size_from_AABB(const AABB & aabb, Vec2 & position, Vec2 & size);
+
+AABB compute_ABB_from_polygon(const std::vector<Vec2> & polygon);
+
+Vec2 AABB_to_size(const AABB & aabb);

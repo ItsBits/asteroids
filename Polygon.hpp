@@ -141,6 +141,12 @@ public:
         return m_vertices.size();
     }
 
+    //==========================================================================
+    const std::vector<Vec2> & vertices() const
+    {
+        return m_vertices;
+    }
+
 private:
     GLuint m_VAO{ 0 };
     GLuint m_VBO{ 0 };

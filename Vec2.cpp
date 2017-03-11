@@ -29,3 +29,11 @@ void wrap_around(Vec2 & point, const Vec2 & size)
     if (point.x >  1.0f + size.x) point.x -= 2.0f + 2.0f * size.x;
     if (point.y >  1.0f + size.y) point.y -= 2.0f + 2.0f * size.y;
 }
+
+Vec2 multiply(const Vec2 & v, float m[4])
+{
+    return {
+        v.x * m[0] + v.y * m[1],
+        v.x * m[2] + v.y * m[3],
+    };
+}
