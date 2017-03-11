@@ -47,6 +47,16 @@ int main()
 
     Ship ship{ 0.03f, 1.0f, 1.5f };
 
+    const std::vector<Vec2> aabb
+        {
+            { -1.0f, -1.0f },
+            {  1.0f, -1.0f },
+            {  1.0f,  1.0f },
+            { -1.0f,  1.0f },
+        };
+
+    Polygon aabb_polygon{ aabb };
+
     std::vector<Projectile> projectiles;
 
     float time_til_vulneable = 3.0f; // TODO: move that to Ship class
@@ -143,11 +153,39 @@ int main()
 
         ship.draw(scale_uniform, rotation_uniform, offset_uniform);
 
-        glUniformMatrix2fv(rotation_uniform, 1, 0, asteroid_rotation_matrix); // TODO: rotate asteroids
         glUniform3f(col_uniform, 0.3f, 0.0f, 1.0f);
         std::for_each(projectiles.begin(), projectiles.end(), [offset_uniform, scale_uniform, rotation_uniform] (Projectile & p) { p.draw(scale_uniform, rotation_uniform, offset_uniform); });
+
         glUniform3f(col_uniform, 1.0f, 1.0f, 1.0f);
+        glUniformMatrix2fv(rotation_uniform, 1, 0, asteroid_rotation_matrix); // TODO: rotate asteroids
+        // glUniform3f(col_uniform, 1.0f, 1.0f, 1.0f);
         std::for_each(rocks.begin(), rocks.end(), [offset_uniform, scale_uniform, col_uniform] (Rock & r) { r.draw(offset_uniform, scale_uniform); });
+
+        /*
+         * draw bounding boxes
+         */
+
+        auto draw_aabb = [offset_uniform, scale_uniform, &aabb_polygon](const auto & element)
+        {
+            Vec2 position, size;
+
+            position_size_from_AABB(element.boundingBox(), position, size);
+
+            glUniform2f(scale_uniform, size.x, size.y);
+            glUniform2f(offset_uniform, position.x, position.y);
+
+            aabb_polygon.draw();
+        };
+
+        glUniform3f(col_uniform, 1.0f, 0.0f, 0.0f);
+
+        std::for_each(projectiles.begin(), projectiles.end(), draw_aabb);
+        std::for_each(rocks.begin(), rocks.end(), draw_aabb);
+        draw_aabb(ship);
+
+
+
+
 
         if (score_update < 0.0f)
         {

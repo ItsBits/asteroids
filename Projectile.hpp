@@ -132,7 +132,7 @@ public:
 
 
 
-    AABB boundingBox() // TODO: this is not always correct because of rotation
+    AABB boundingBox() const // TODO: this is not always correct because of rotation
     {
         return {
             Vec2{ m_position.x - m_size.x, m_position.y - m_size.y },

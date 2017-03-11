@@ -38,3 +38,5 @@ private:
 };
 
 AABB operator + (const AABB & aabb, const Vec2 & v);
+
+void position_size_from_AABB(const AABB & aabb, Vec2 & position, Vec2 & size);

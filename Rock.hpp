@@ -111,7 +111,7 @@ public:
     }
 
     //==========================================================================
-    AABB boundingBox()
+    AABB boundingBox() const
     {
         return {
             { m_position.x - m_size, m_position.y - m_size },

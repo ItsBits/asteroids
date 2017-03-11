@@ -160,7 +160,7 @@ public:
         if (Keyboard::getKeyStatus(GLFW_KEY_SPACE) == Keyboard::KeyStatus::PRESSED && m_cool_down <= 0.0f)
         {
             m_cool_down = cooldown;
-            projectiles.emplace_back(m_position, m_direction * 3.0f , Vec2{ 0.03f, 0.01f }, 0.5f);
+            projectiles.emplace_back(m_position, m_direction * 0.6f , Vec2{ 0.03f, 0.01f }, 1.5f);
             shot = true;
         }
 
@@ -169,7 +169,7 @@ public:
         return shot;
     }
 
-    AABB boundingBox() // TODO: this is not always correct because of rotation
+    AABB boundingBox() const // TODO: this is not always correct because of rotation
     {
         return AABB{
             Vec2{ m_position.x - m_size, m_position.y - m_size },
