@@ -25,7 +25,6 @@ public:
         m_cool_down{ 0.0f },
         m_movement_speed{ std::max(0.0f, movement_speed) },
         m_rotation_speed{ std::max(0.0f, rotation_speed) },
-        m_vertices { DEFAULT_SHIP_MODEL },
         m_polygon  { DEFAULT_SHIP_MODEL }
     {}
 
@@ -45,7 +44,6 @@ public:
         m_cool_down{ other.m_cool_down },
         m_movement_speed{ other.m_movement_speed },
         m_rotation_speed{ other.m_rotation_speed },
-        m_vertices { std::move(other.m_vertices) },
         m_polygon  { std::move(other.m_polygon)  }
     {
         other.m_size      = 1.0f;
@@ -65,7 +63,6 @@ public:
         m_cool_down = other.m_cool_down;
         m_movement_speed = other.m_movement_speed;
         m_rotation_speed = other.m_rotation_speed;
-        m_vertices  = std::move(other.m_vertices);
         m_polygon   = std::move(other.m_polygon);
 
         other.m_size      = 1.0f;
@@ -125,10 +122,7 @@ public:
         // TODO: update bounding box because of rotation (m_size is not sufficient)
 
         // wrap/warp around
-        if (m_position.x < -1.0f - m_size) m_position.x += 2.0f + 2.0f * m_size;
-        if (m_position.y < -1.0f - m_size) m_position.y += 2.0f + 2.0f * m_size;
-        if (m_position.x >  1.0f + m_size) m_position.x -= 2.0f + 2.0f * m_size;
-        if (m_position.y >  1.0f + m_size) m_position.y -= 2.0f + 2.0f * m_size;
+        wrap_around(m_position, { m_size, m_size });
     }
 
     //==========================================================================
@@ -192,7 +186,6 @@ private:
     float m_movement_speed;
     float m_rotation_speed;
 
-    std::vector<Vec2> m_vertices;
     Polygon m_polygon;
 
 };

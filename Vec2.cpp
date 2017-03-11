@@ -21,3 +21,11 @@ Vec2 operator + (const Vec2 & v1, const Vec2 & v2) { return Vec2{ v1.x + v2.x, v
 Vec2 operator - (const Vec2 & v1, const Vec2 & v2) { return Vec2{ v1.x - v2.x, v1.y - v2.y}; }
 Vec2 operator / (const Vec2 & v1, const Vec2 & v2) { return Vec2{ v1.x / v2.x, v1.y / v2.y}; }
 Vec2 operator * (const Vec2 & v1, const Vec2 & v2) { return Vec2{ v1.x * v2.x, v1.y * v2.y}; }
+
+void wrap_around(Vec2 & point, const Vec2 & size)
+{
+    if (point.x < -1.0f - size.x) point.x += 2.0f + 2.0f * size.x;
+    if (point.y < -1.0f - size.y) point.y += 2.0f + 2.0f * size.y;
+    if (point.x >  1.0f + size.x) point.x -= 2.0f + 2.0f * size.x;
+    if (point.y >  1.0f + size.y) point.y -= 2.0f + 2.0f * size.y;
+}

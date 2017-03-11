@@ -20,12 +20,11 @@ public:
     }
 
     //==========================================================================
-    Polygon (const Polygon & other)
+    Polygon (const Polygon & other) :
+        m_vertices{ other.m_vertices }
     {
         if (other.m_VAO == 0)
             return;
-
-        m_vertex_count = other.m_vertex_count;
 
         glGenVertexArrays(1, &m_VAO);
         glGenBuffers(1, &m_VBO);
@@ -36,22 +35,20 @@ public:
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2), (GLvoid *)0);
         glEnableVertexAttribArray(0);
 
-        glBufferData(GL_ARRAY_BUFFER, m_vertex_count * sizeof(Vec2), nullptr, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vec2), nullptr, GL_STATIC_DRAW);
 
         glBindBuffer(GL_COPY_READ_BUFFER, other.m_VBO);
-        glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_ARRAY_BUFFER, 0, 0, m_vertex_count * sizeof(Vec2));
+        glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_ARRAY_BUFFER, 0, 0, m_vertices.size() * sizeof(Vec2));
     }
 
     //==========================================================================
-    Polygon(Polygon && other)
+    Polygon(Polygon && other) :
+        m_VAO{ other.m_VAO },
+        m_VBO{ other.m_VBO },
+        m_vertices{ std::move(other.m_vertices) }
     {
-        m_VAO = other.m_VAO;
-        m_VBO = other.m_VBO;
-        m_vertex_count = other.m_vertex_count;
-
         other.m_VAO = 0;
         other.m_VBO = 0;
-        other.m_vertex_count = 0;
     }
 
     //==========================================================================
@@ -70,11 +67,10 @@ public:
 
         m_VAO = other.m_VAO;
         m_VBO = other.m_VBO;
-        m_vertex_count  = other.m_vertex_count;
+        m_vertices = std::move(other.m_vertices);
 
         other.m_VAO = 0;
         other.m_VBO = 0;
-        other.m_vertex_count = 0;
 
         return *this;
     }
@@ -87,20 +83,20 @@ public:
 
         m_VAO = 0;
         m_VBO = 0;
-        m_vertex_count = 0;
     }
 
     //==========================================================================
     void update(const std::vector<Vec2> & vertices)
     {
-        if (vertices.size() == 0)
+        m_vertices = std::move(vertices); // this will not move
+
+        if (m_vertices.size() == 0)
         {
             glDeleteVertexArrays(1, &m_VAO);
             glDeleteBuffers(1, &m_VBO);
 
             m_VAO = 0;
             m_VBO = 0;
-            m_vertex_count = 0;
 
             return;
         }
@@ -123,9 +119,7 @@ public:
             glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
         }
 
-        m_vertex_count = static_cast<GLsizei>(vertices.size());
-
-        glBufferData(GL_ARRAY_BUFFER, m_vertex_count * sizeof(Vec2), vertices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vec2), m_vertices.data(), GL_STATIC_DRAW);
     }
 
     //==========================================================================
@@ -138,18 +132,19 @@ public:
         }
 
         glBindVertexArray(m_VAO);
-        glDrawArrays(GL_LINE_LOOP, 0, m_vertex_count);
+        glDrawArrays(GL_LINE_LOOP, 0, static_cast<GLsizei>(m_vertices.size()));
     }
 
     //==========================================================================
-    GLsizei size() const
+    std::size_t size() const
     {
-        return m_vertex_count;
+        return m_vertices.size();
     }
 
 private:
     GLuint m_VAO{ 0 };
     GLuint m_VBO{ 0 };
-    GLsizei m_vertex_count{ 0 };
+
+    std::vector<Vec2> m_vertices;
 
 };

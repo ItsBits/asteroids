@@ -33,3 +33,5 @@ Vec2 operator + (const Vec2 & v1, const Vec2 & v2);
 Vec2 operator - (const Vec2 & v1, const Vec2 & v2);
 Vec2 operator / (const Vec2 & v1, const Vec2 & v2);
 Vec2 operator * (const Vec2 & v1, const Vec2 & v2);
+
+void wrap_around(Vec2 & point, const Vec2 & size);

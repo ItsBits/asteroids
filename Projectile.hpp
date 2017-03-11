@@ -182,6 +182,7 @@ public:
     }
 
 private:
+    [[deprecated]]
     GLuint  m_VAO, m_VBO; // TODO: move mesh out of this class, because it's the same all the time
     Vec2 m_position;
     Vec2 m_velocity;

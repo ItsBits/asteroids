@@ -22,25 +22,27 @@ public:
     {
         vertex_count = std::max(4, vertex_count);
 
-        m_vertices.reserve(static_cast<std::size_t>(vertex_count));
+        std::vector<Vec2> vertices;
+
+        vertices.reserve(static_cast<std::size_t>(vertex_count));
 
         // generate normalized polar coordinates of vertices
         for (int i = 0; i < vertex_count; ++i)
-            m_vertices.push_back(rng.get());
+            vertices.push_back(rng.get());
 
-        assert(m_vertices.size() >= 4);
+        assert(vertices.size() >= 4);
 
         // guarantee that at leas one point is inside of each quadrant
         for (int i = 0; i < 4; ++i)
-            m_vertices[i].y = m_vertices[i].y * 0.25f + static_cast<float>(i) * 0.25f;
+            vertices[i].y = vertices[i].y * 0.25f + static_cast<float>(i) * 0.25f;
 
         // sort by polar angle
-        std::sort(m_vertices.begin(), m_vertices.end(),
+        std::sort(vertices.begin(), vertices.end(),
                   [](const Vec2 & a, const Vec2 & b) { return a.y < b.y; }
         );
 
         // convert normalized polar to cartesian coordinates
-        std::for_each(m_vertices.begin(), m_vertices.end(),
+        std::for_each(vertices.begin(), vertices.end(),
                       [](Vec2 & v)
                       {
                           // * hardcoded size interpretation
@@ -52,7 +54,7 @@ public:
                       }
         );
 
-        m_polygon.update(m_vertices);
+        m_polygon.update(vertices);
     }
 
     //==========================================================================
@@ -68,7 +70,6 @@ public:
         m_size{ other.m_size },
         m_position{ other.m_position },
         m_velocity{ other.m_velocity },
-        m_vertices{ std::move(other.m_vertices) },
         m_polygon{ std::move(other.m_polygon) }
     {
         other.m_size = 0;
@@ -83,7 +84,6 @@ public:
         m_position = other.m_position;
         m_velocity = other.m_velocity;
 
-        m_vertices = std::move(other.m_vertices);
         m_polygon = std::move(other.m_polygon);
 
         other.m_size = 0;
@@ -100,17 +100,14 @@ public:
     ~Rock() = default;
 
     //==========================================================================
-    void move(float delta_time) // TODO: reuse tis function for all objects
+    void move(float delta_time)
     {
         // euler integration
         m_position.x += m_velocity.x * delta_time;
         m_position.y += m_velocity.y * delta_time;
 
         // wrap/warp around
-        if (m_position.x < -1.0f - m_size) m_position.x += 2.0f + 2.0f * m_size;
-        if (m_position.y < -1.0f - m_size) m_position.y += 2.0f + 2.0f * m_size;
-        if (m_position.x >  1.0f + m_size) m_position.x -= 2.0f + 2.0f * m_size;
-        if (m_position.y >  1.0f + m_size) m_position.y -= 2.0f + 2.0f * m_size;
+        wrap_around(m_position, { m_size, m_size });
     }
 
     //==========================================================================
@@ -144,7 +141,7 @@ public:
 
     float size() const { return m_size; } // TODO: when splitting kill if split blocks are smaller than 4 vertices
 
-    std::size_t vertexCount() const { return m_vertices.size(); }
+    std::size_t vertexCount() const { return m_polygon.size(); }
 
     Rock split(Vec2Gen & rng)
     {
@@ -163,7 +160,6 @@ private:
     Vec2 m_position;
     Vec2 m_velocity;
 
-    std::vector<Vec2> m_vertices;
     Polygon m_polygon;
 
 };
