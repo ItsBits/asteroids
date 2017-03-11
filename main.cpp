@@ -76,7 +76,7 @@ int main()
         std::for_each(rocks.begin(), rocks.end(), [delta_time] (Rock & r) { r.move(delta_time); });
         std::for_each(projectiles.begin(), projectiles.end(), [delta_time] (Projectile & p) { p.move(delta_time); });
 
-        projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [] (Projectile & p) { return p.dead(); }), projectiles.end());
+        projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [] (Projectile & p) { return p.isDead(); }), projectiles.end());
 
         Vec2 offs[]{
             { -2.0f, -2.0f },
@@ -105,7 +105,7 @@ int main()
                         new_rocks.push_back(i->split(rng));
                         new_rocks.push_back(i->split(rng));
                         rocks.erase(i);
-                        p.markDead();
+                        p.kill();
                         breakk = true;
                         break;
                     }
@@ -117,7 +117,7 @@ int main()
         // TODO: add new_rocks
         std::for_each(new_rocks.begin(), new_rocks.end(), [&rocks](Rock & r){ if (r.size() > 0.08f) rocks.push_back(r); });
 
-        projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [] (Projectile & p) { return p.dead(); }), projectiles.end());
+        projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [] (Projectile & p) { return p.isDead(); }), projectiles.end());
 
         // check death
         time_til_vulneable -= delta_time;
@@ -143,8 +143,9 @@ int main()
 
         ship.draw(scale_uniform, rotation_uniform, offset_uniform);
 
-        glUniformMatrix2fv(rotation_uniform, 1, 0, asteroid_rotation_matrix);
-        std::for_each(projectiles.begin(), projectiles.end(), [offset_uniform, scale_uniform, col_uniform] (Projectile & p) { p.draw(offset_uniform, scale_uniform, col_uniform); });
+        glUniformMatrix2fv(rotation_uniform, 1, 0, asteroid_rotation_matrix); // TODO: rotate asteroids
+        glUniform3f(col_uniform, 0.3f, 0.0f, 1.0f);
+        std::for_each(projectiles.begin(), projectiles.end(), [offset_uniform, scale_uniform, rotation_uniform] (Projectile & p) { p.draw(scale_uniform, rotation_uniform, offset_uniform); });
         glUniform3f(col_uniform, 1.0f, 1.0f, 1.0f);
         std::for_each(rocks.begin(), rocks.end(), [offset_uniform, scale_uniform, col_uniform] (Rock & r) { r.draw(offset_uniform, scale_uniform); });
 

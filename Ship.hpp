@@ -128,15 +128,15 @@ public:
     //==========================================================================
     void draw(GLint scale_uniform, GLint rotation_uniform, GLint translation_uniform)
     {
-        const auto ship_angle = -std::atan2(m_direction.y, m_direction.x);
+        const auto angle = -std::atan2(m_direction.y, m_direction.x);
 
         const float rotation_matrix[]{
-            std::cos(ship_angle), -std::sin(ship_angle),
-            std::sin(ship_angle),  std::cos(ship_angle)
+            std::cos(angle), -std::sin(angle),
+            std::sin(angle),  std::cos(angle)
         };
 
         glUniform2f(scale_uniform, m_size, m_size);
-        glUniformMatrix2fv(rotation_uniform, 1, 0, rotation_matrix);
+        glUniformMatrix2fv(rotation_uniform, 1, GL_FALSE, rotation_matrix);
         glUniform2f(translation_uniform, m_position.x, m_position.y);
 
         m_polygon.draw();
@@ -160,7 +160,7 @@ public:
         if (Keyboard::getKeyStatus(GLFW_KEY_SPACE) == Keyboard::KeyStatus::PRESSED && m_cool_down <= 0.0f)
         {
             m_cool_down = cooldown;
-            projectiles.emplace_back(m_position, m_direction * 3.0f , 0.02f, 0.5f);
+            projectiles.emplace_back(m_position, m_direction * 3.0f , Vec2{ 0.03f, 0.01f }, 0.5f);
             shot = true;
         }
 
@@ -172,8 +172,8 @@ public:
     AABB boundingBox() // TODO: this is not always correct because of rotation
     {
         return AABB{
-            Vec2{ -m_size + m_position.x, -m_size  + m_position.y },
-            Vec2{  m_size + m_position.x,  m_size  + m_position.y }
+            Vec2{ m_position.x - m_size, m_position.y - m_size },
+            Vec2{ m_position.x + m_size, m_position.y + m_size }
         };
     }
 

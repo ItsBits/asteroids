@@ -67,12 +67,12 @@ public:
 
     //==========================================================================
     Rock(Rock && other) :
-        m_size{ other.m_size },
+        m_size    { other.m_size },
         m_position{ other.m_position },
         m_velocity{ other.m_velocity },
-        m_polygon{ std::move(other.m_polygon) }
+        m_polygon { std::move(other.m_polygon) }
     {
-        other.m_size = 0;
+        other.m_size     = 0;
         other.m_position = Vec2{ 0.0f, 0.0f };
         other.m_velocity = Vec2{ 0.0f, 0.0f };
     }
@@ -80,13 +80,13 @@ public:
     //==========================================================================
     Rock & operator = (Rock && other)
     {
-        m_size = other.m_size;
+        m_size     = other.m_size;
         m_position = other.m_position;
         m_velocity = other.m_velocity;
 
         m_polygon = std::move(other.m_polygon);
 
-        other.m_size = 0;
+        other.m_size     = 0;
         other.m_position = Vec2{ 0.0f, 0.0f };
         other.m_velocity = Vec2{ 0.0f, 0.0f };
 
@@ -156,7 +156,7 @@ public:
 
 
 private:
-    float m_size;
+    float m_size; // TODO: class Object (vec2 size, vec2 position, vec2 velocity) and reuse it in all other similar classes (ship rock projectile)
     Vec2 m_position;
     Vec2 m_velocity;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/gl3w.h>
+
 #include <vector>
 #include <cassert>
 
@@ -8,187 +9,147 @@
 #include "AABB.hpp"
 #include "Polygon.hpp"
 
+static const std::vector<Vec2> DEFAULT_PROJECTILE_MODEL
+{
+    { -1.0f, -1.0f },
+    {  1.0f, -1.0f },
+    {  1.0f,  1.0f },
+    { -1.0f,  1.0f },
+};
+
 class Projectile
 {
 public:
-    Projectile(Vec2 position, Vec2 velocity, float size, float time_til_death) :
-        m_position{ position },
-        m_velocity{ velocity }
-    {
-        if (size < 0.0f) size = 0.0f;
-        m_size = size;
+    //==========================================================================
+    Projectile(Vec2 position, Vec2 velocity, Vec2 size, float life_time) :
+        m_size     { std::max(0.0f, size.x), std::max(0.0f, size.y) },
+        m_position { position },
+        m_velocity { velocity },
+        m_time_left{ std::max(0.0f, life_time) },
+        m_polygon  { DEFAULT_PROJECTILE_MODEL }
+    {}
 
-        if (time_til_death < 0.0f) time_til_death = 0.0f;
-        m_time_til_death = time_til_death;
-
-        std::vector<Vec2> mesh{
-            {  -1.0f,  -1.0f },
-            {  -1.0f,   1.0f },
-            {   1.0f,   1.0f },
-            {   1.0f,  -1.0f }
-        };
-
-        m_vertex_count = mesh.size();
-
-        glGenVertexArrays(1, &m_VAO);
-        glGenBuffers(1, &m_VBO);
-
-        glBindVertexArray(m_VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2), (GLvoid *) (0));
-        glEnableVertexAttribArray(0);
-        glBindVertexArray(0);
-
-        glBufferData(GL_ARRAY_BUFFER, mesh.size() * sizeof(mesh[0]), mesh.data(), GL_STATIC_DRAW);
-    }
-
-    Projectile(Projectile && other)
-    {
-        m_VAO           = other.m_VAO;
-        m_VBO           = other.m_VBO;
-        m_position      = other.m_position;
-        m_velocity      = other.m_velocity;
-        m_size          = other.m_size;
-        m_vertex_count  = other.m_vertex_count;
-        m_time_til_death = other.m_time_til_death;
-
-        other.m_VAO = 0;
-        other.m_VBO = 0;
-    }
-
+    //==========================================================================
     Projectile & operator = (const Projectile & other)
     {
-        Projectile tmp(other);
+        Projectile tmp{ other };
         *this = std::move(tmp);
         return *this;
     }
 
+    //==========================================================================
+    Projectile(Projectile && other) :
+        m_size     { other.m_size },
+        m_position { other.m_position },
+        m_velocity { other.m_velocity },
+        m_time_left{ other.m_time_left },
+        m_polygon  { std::move(other.m_polygon) }
+    {
+        other.m_size      = Vec2{ 0.0f, 0.0f };
+        other.m_position  = Vec2{ 0.0f, 0.0f };
+        other.m_velocity  = Vec2{ 0.0f, 0.0f };
+        other.m_time_left = 0.0f;
+    }
+
+    //==========================================================================
     Projectile & operator = (Projectile && other)
     {
-        glDeleteVertexArrays(1, &m_VAO);
-        glDeleteBuffers(1, &m_VBO);
+        m_size      = other.m_size;
+        m_position  = other.m_position;
+        m_velocity  = other.m_velocity;
+        m_time_left = other.m_time_left;
+        m_polygon   = std::move(other.m_polygon);
 
-        m_VAO           = other.m_VAO;
-        m_VBO           = other.m_VBO;
-        m_position      = other.m_position;
-        m_velocity      = other.m_velocity;
-        m_size          = other.m_size;
-        m_vertex_count  = other.m_vertex_count;
-        m_time_til_death = other.m_time_til_death;
-
-        other.m_VAO = 0;
-        other.m_VBO = 0;
+        other.m_size      = Vec2{ 0.0f, 0.0f };
+        other.m_position  = Vec2{ 0.0f, 0.0f };
+        other.m_velocity  = Vec2{ 0.0f, 0.0f };
+        other.m_time_left = 0.0f;
 
         return *this;
     }
 
-    Projectile(const Projectile & other)
-    // FUCK STL! this is needed because it is being called by std::vector when reallocating
+    //==========================================================================
+    Projectile(const Projectile & other) = default;
+
+    //==========================================================================
+    ~Projectile() = default;
+
+    //==========================================================================
+    bool isDead() const
     {
-        //m_VAO           = other.m_VAO;
-        //m_VBO           = other.m_VBO;
-        m_position      = other.m_position;
-        m_velocity      = other.m_velocity;
-        m_size          = other.m_size;
-        m_vertex_count  = other.m_vertex_count;
-        m_time_til_death = other.m_time_til_death;
-
-        glGenVertexArrays(1, &m_VAO);
-        glGenBuffers(1, &m_VBO);
-
-        glBindVertexArray(m_VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2), (GLvoid *) (0));
-        glEnableVertexAttribArray(0);
-        glBindVertexArray(0);
-
-        glBufferData(GL_ARRAY_BUFFER, m_vertex_count * sizeof(Vec2), nullptr, GL_STATIC_DRAW); // RESERVE SPACE
-
-        //glBindBuffer(GL_ARRAY_BUFFER, other.m_VBO); // already hapened before
-        glBindBuffer(GL_COPY_READ_BUFFER, other.m_VBO);
-        glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_ARRAY_BUFFER, 0, 0, m_vertex_count * sizeof(Vec2));
+        return m_time_left <= 0.0f;
     }
 
-    AABB boundingBox()
+    //==========================================================================
+    void kill()
     {
-        return AABB{
-            Vec2{ -m_size + m_position.x, -m_size  + m_position.y },
-            Vec2{  m_size + m_position.x,  m_size  + m_position.y }
+        m_time_left = -1.0f;
+    }
+
+    //==========================================================================
+    void draw(GLint scale_uniform, GLint rotation_uniform, GLint translation_uniform)
+    {
+        assert(m_time_left > 0.0f);
+
+        const auto angle = -std::atan2(m_velocity.y, m_velocity.x);
+
+        const float rotation_matrix[]{ // TODO: pre-compute, because it stays constant
+            std::cos(angle), -std::sin(angle),
+            std::sin(angle),  std::cos(angle)
         };
+
+        glUniform2f(scale_uniform, m_size.x, m_size.y);
+        glUniformMatrix2fv(rotation_uniform, 1, GL_FALSE, rotation_matrix);
+        glUniform2f(translation_uniform, m_position.x, m_position.y);
+
+        m_polygon.draw();
     }
 
-    bool dead() const
-    {
-        return m_time_til_death < 0.0f;
-    }
-
-    void markDead()
-    {
-        m_time_til_death = -1.0f;
-    }
-
+    //==========================================================================
     void move(float delta_time)
     {
-        m_time_til_death -= delta_time;
-
-        // euler
+        // euler integration
         m_position.x += m_velocity.x * delta_time;
         m_position.y += m_velocity.y * delta_time;
 
-        const auto box = boundingBox();
-        const auto min = box.getMin();
+        // wrap/warp around
+        wrap_around(m_position, m_size);
 
-        if (min.x < -1.0f) m_position.x += 2.0f;
-        if (min.y < -1.0f) m_position.y += 2.0f;
-
-        if (min.x > 1.0f) m_position.x -= 2.0f;
-        if (min.y > 1.0f) m_position.y -= 2.0f;
+        m_time_left -= delta_time;
     }
 
-    ~Projectile() // TODO: fix the fact that shuffling vectors will call destructors
-    {
-        glDeleteVertexArrays(1, &m_VAO);
-        glDeleteBuffers(1, &m_VBO);
-    }
 
-    void draw(GLint offset_uniform, GLint size_uniform, GLint col_uniform)
-    {
-        assert(m_time_til_death >= 0.0f);
+    /*
+     *
+     *
+     *
+     *
+     * refactor stuff below
+     *
+     *
+     *
+     */
 
-        Vec2 offs[4]{
-            { 0.0f, 0.0f },
-            { -2.0f, 0.0f },
-            { -2.0f, -2.0f },
-            { 0.0f, -2.0f }
+
+
+    AABB boundingBox() // TODO: this is not always correct because of rotation
+    {
+        return {
+            Vec2{ m_position.x - m_size.x, m_position.y - m_size.y },
+            Vec2{ m_position.x + m_size.x, m_position.y + m_size.y }
         };
-
-        // asteroid
-        glUniform2f(size_uniform, m_size, m_size);
-        glUniform3f(col_uniform, 0.0f, 0.0f, 1.0f);
-        glBindVertexArray(m_VAO);
-        { const GLenum r = glGetError(); assert(r == GL_NO_ERROR); }
-        for (const auto & o : offs)
-        {
-            glUniform2f(offset_uniform, m_position.x + o.x, m_position.y + o.y);
-            glDrawArrays(GL_LINE_LOOP, 0, m_vertex_count);
-            { const GLenum r = glGetError(); assert(r == GL_NO_ERROR); }
-        }
-        { const GLenum r = glGetError(); assert(r == GL_NO_ERROR); }
-
-        glBindVertexArray(0);
-        { const GLenum r = glGetError(); assert(r == GL_NO_ERROR); }
     }
+
+
+
 
 private:
-    [[deprecated]]
-    GLuint  m_VAO, m_VBO; // TODO: move mesh out of this class, because it's the same all the time
+    Vec2 m_size;
     Vec2 m_position;
     Vec2 m_velocity;
-    float m_size;
-    [[deprecated]]
-    GLsizei m_vertex_count;
-    float m_time_til_death;
+
+    float m_time_left;
+
+    Polygon m_polygon;
 
 };
