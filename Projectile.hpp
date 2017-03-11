@@ -21,6 +21,9 @@ class Projectile
 {
 public:
     //==========================================================================
+    Projectile() : m_time_left{ 0.0f } {}
+
+    //==========================================================================
     Projectile(Vec2 position, Vec2 velocity, Vec2 size, float life_time) :
         m_size     { std::max(0.0f, size.x), std::max(0.0f, size.y) },
         m_position { position },

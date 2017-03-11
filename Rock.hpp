@@ -15,6 +15,9 @@ class Rock
 {
 public:
     //==========================================================================
+    Rock() {}
+
+    //==========================================================================
     Rock(Vec2Gen & rng, float size, int vertex_count, Vec2 position, Vec2 velocity) :
         m_size{ std::max(0.0f, size) },
         m_position{ position },
@@ -161,15 +164,28 @@ public:
 
     float size() const { return m_size; } // TODO: when splitting kill if split blocks are smaller than 4 vertices
 
-    std::size_t vertexCount() const { return m_polygon.size(); }
-
-    Rock split(Vec2Gen & rng)
+    std::tuple<int, Rock, Rock> split(Vec2Gen & rng)
     {
         // TODO: actually split on vertices that are hit by the projectile
         // TODO: when splitting kill if split blocks are smaller than 4 vertices
-        return Rock{
-            rng, m_size / 2.0f, m_polygon.size() / 2, m_position, rng.get()
-        };
+        // aka. improve splitting
+
+        const auto size = m_polygon.size();
+
+        if (size < 5)
+            return std::make_tuple(0, Rock{}, Rock{});
+        else if (size < 8)
+            return std::make_tuple(
+                1,
+                Rock{ rng, m_size / 2.0f, m_polygon.size() / 2, m_position, rng.get() },
+                Rock{}
+            );
+        else
+            return std::make_tuple(
+                2,
+                Rock{ rng, m_size / 2.0f, m_polygon.size() / 2, m_position, rng.get() },
+                Rock{ rng, m_size / 2.0f, m_polygon.size() / 2, m_position, rng.get() }
+            );
     }
 
 

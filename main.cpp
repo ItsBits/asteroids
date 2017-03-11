@@ -45,7 +45,7 @@ int main()
             (rng.get() * 2.0f - 1.0f), (rng.get() * 2.0f - 1.0f) * 0.3f
         );
 
-    Ship ship{ 0.03f, 1.0f, 1.5f };
+    Ship ship{ 0.03f, 1.0f, 1.5f, 0.3f };
 
     const std::vector<Vec2> aabb
         {
@@ -78,17 +78,20 @@ int main()
 
         // ship
         ship.move(delta_time);
-        bool shot = ship.shoot(projectiles, rng, delta_time, 0.3f);
+        const auto shot = ship.shoot(delta_time);
 
-        if (shot)
+        if (std::get<0>(shot) == true)
+        {
+            projectiles.emplace_back(std::get<1>(shot));
             score -= 2.0f;
+        }
 
         std::for_each(rocks.begin(), rocks.end(), [delta_time] (Rock & r) { r.move(delta_time); });
         std::for_each(projectiles.begin(), projectiles.end(), [delta_time] (Projectile & p) { p.move(delta_time); });
 
         projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [] (Projectile & p) { return p.isDead(); }), projectiles.end());
 
-        Vec2 offs[]{
+        /*Vec2 offs[]{
             { -2.0f, -2.0f },
             {  0.0f, -2.0f },
             {  2.0f, -2.0f },
@@ -98,7 +101,7 @@ int main()
             { -2.0f,  2.0f },
             {  0.0f,  2.0f },
             {  2.0f,  2.0f }
-        };
+        };*/
 
         std::vector<Rock> new_rocks;
 
@@ -106,26 +109,23 @@ int main()
         {
             for (auto i = rocks.begin(); i != rocks.end(); ++i)
             {
-                auto breakk = false;
+                if (AABB::intersect(p.boundingBox(), i->boundingBox()))
+                {
+                    score += 1.0f / (i->size() + 0.01f);
 
-                for (auto & of : offs) // TODO: isn't there a faster way?????!!!!
-                    if (AABB::intersect(p.boundingBox() + of, i->boundingBox()))
-                    {
-                        score += 1.0f / (i->size() + 0.01f);
-                        new_rocks.push_back(i->split(rng));
-                        new_rocks.push_back(i->split(rng));
-                        rocks.erase(i);
-                        p.kill();
-                        breakk = true;
-                        break;
-                    }
+                    const auto new_rock = i->split(rng);
+                    if (std::get<0>(new_rock) >= 1) new_rocks.emplace_back(std::get<1>(new_rock));
+                    if (std::get<0>(new_rock) == 2) new_rocks.emplace_back(std::get<2>(new_rock));
 
-                if (breakk) break;
+                    std::cout << new_rocks.size() << std::endl;
+                    rocks.erase(i);
+                    p.kill();
+                    break;
+                }
             }
         }
 
-        // TODO: add new_rocks
-        std::for_each(new_rocks.begin(), new_rocks.end(), [&rocks](Rock & r){ if (r.size() > 0.08f) rocks.push_back(r); });
+        rocks.insert(rocks.end(), new_rocks.begin(), new_rocks.end());
 
         projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [] (Projectile & p) { return p.isDead(); }), projectiles.end());
 

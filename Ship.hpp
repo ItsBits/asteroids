@@ -18,11 +18,12 @@ class Ship
 {
 public:
     //==========================================================================
-    Ship(float size, float movement_speed, float rotation_speed) :
+    Ship(float size, float movement_speed, float rotation_speed, float weapon_cool_down) :
         m_size     { std::max(0.0f, size) },
         m_position { 0.0f, 0.0f },
         m_direction{ 1.0f, 0.0f },
         m_cool_down{ 0.0f },
+        m_weapon_cool_down{ std::max(0.0f, weapon_cool_down) },
         m_movement_speed{ std::max(0.0f, movement_speed) },
         m_rotation_speed{ std::max(0.0f, rotation_speed) },
         m_polygon  { DEFAULT_SHIP_MODEL }
@@ -57,6 +58,7 @@ public:
         m_position { other.m_position  },
         m_direction{ other.m_direction },
         m_cool_down{ other.m_cool_down },
+        m_weapon_cool_down{ other.m_weapon_cool_down },
         m_movement_speed{ other.m_movement_speed },
         m_rotation_speed{ other.m_rotation_speed },
         m_polygon  { std::move(other.m_polygon)  },
@@ -68,6 +70,7 @@ public:
         other.m_position  = Vec2{ 0.0f, 0.0f };
         other.m_direction = Vec2{ 0.0f, 0.0f };
         other.m_cool_down = 0.0f;
+        other.m_weapon_cool_down = 0.0f;
         other.m_movement_speed = 0.0f;
         other.m_rotation_speed = 0.0f;
         other.m_bounding_box = AABB{ Vec2{ 0.0f, 0.0f }, Vec2{ 0.0f, 0.0f } };
@@ -81,6 +84,7 @@ public:
         m_position  = other.m_position;
         m_direction = other.m_direction;
         m_cool_down = other.m_cool_down;
+        m_weapon_cool_down = other.m_weapon_cool_down;
         m_movement_speed = other.m_movement_speed;
         m_rotation_speed = other.m_rotation_speed;
         m_polygon   = std::move(other.m_polygon);
@@ -91,6 +95,7 @@ public:
         other.m_position  = Vec2{ 0.0f, 0.0f };
         other.m_direction = Vec2{ 0.0f, 0.0f };
         other.m_cool_down = 0.0f;
+        other.m_weapon_cool_down = 0.0f;
         other.m_movement_speed = 0.0f;
         other.m_rotation_speed = 0.0f;
         other.m_bounding_box = AABB{ Vec2{ 0.0f, 0.0f }, Vec2{ 0.0f, 0.0f } };
@@ -185,31 +190,23 @@ public:
         return m_polygon.vertices();
     }
 
-
-    /*
-     *
-     *
-     *
-     * refactor stuff below
-     */
-
-
-
-
-    bool shoot(std::vector<Projectile> & projectiles, Vec2Gen & rng, float delta_time, float cooldown)
+    //==========================================================================
+    std::tuple<bool, Projectile> shoot(float delta_time)
     {
-        bool shot = false;
+        if (m_cool_down >= 0.0f)
+            m_cool_down -= delta_time;
 
-        if (Keyboard::getKeyStatus(GLFW_KEY_SPACE) == Keyboard::KeyStatus::PRESSED && m_cool_down <= 0.0f)
+        if (Keyboard::getKeyStatus(GLFW_KEY_SPACE) == Keyboard::KeyStatus::PRESSED && m_cool_down < 0.0f)
         {
-            m_cool_down = cooldown;
-            projectiles.emplace_back(m_position, m_direction * 0.6f , Vec2{ 0.03f, 0.01f }, 1.5f);
-            shot = true;
+            m_cool_down = m_weapon_cool_down;
+
+            return std::make_tuple(
+                true,
+                Projectile{ m_position, m_direction * 0.6f , Vec2{ 0.03f, 0.01f }, 1.5f }
+            );
         }
 
-        if (m_cool_down > 0.0f) m_cool_down -= delta_time;
-
-        return shot;
+        return std::make_tuple(false, Projectile{});
     }
 
 private:
@@ -218,6 +215,7 @@ private:
     Vec2 m_direction;
 
     float m_cool_down;
+    float m_weapon_cool_down;
     float m_movement_speed;
     float m_rotation_speed;
 
