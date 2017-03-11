@@ -42,10 +42,10 @@ int main()
     for(int i = 0; i < a_count; ++i)
         rocks.emplace_back(rng,
             (rng.get().x + 2.0f) / 14.0f, 10,
-            (rng.get() * 2.0f - 1.0f), (rng.get() * 2.0f - 1.0f) * 0.3f
+            (rng.get() * 2.0f - 1.0f), (rng.get() * 2.0f - 1.0f) * 0.15f
         );
 
-    Ship ship{ 0.03f, 1.0f, 1.5f, 0.3f };
+    Ship ship{ 0.03f, 0.5f, 0.8f, 0.6f };
 
     const std::vector<Vec2> aabb
         {
@@ -63,9 +63,14 @@ int main()
 
     float score = 0.0f;
     float score_update = 0.0f;
-    float delta_time = 0.01f;
+    std::chrono::microseconds delta_time_ns{ 15'000 };
+
+    float delta_time = (double)delta_time_ns.count() / 1'000'000.0;
+
     while(!window.exitRequested())
     {
+        const auto start_time = std::chrono::steady_clock::now();
+
         score -= delta_time * 4.0f;
         score_update -= delta_time;
 
@@ -188,7 +193,9 @@ int main()
         window.swapResizeClearBuffer();
 
         // TODO: better timing
-        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        auto t = start_time;
+        t += delta_time_ns;
+        std::this_thread::sleep_until(t);
 
         { const GLenum r = glGetError(); assert(r == GL_NO_ERROR); }
 

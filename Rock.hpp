@@ -190,14 +190,14 @@ public:
         else if (size < 8)
             return std::make_tuple(
                 1,
-                Rock{ rng, m_size / 2.0f, m_polygon.size() / 2, m_position, rng.get() },
+                Rock{ rng, m_size / 1.5f, m_polygon.size() / 2, m_position, (rng.get() * 2.0f - 1.0f) * 0.15f },
                 Rock{}
             );
         else
             return std::make_tuple(
                 2,
-                Rock{ rng, m_size / 2.0f, m_polygon.size() / 2, m_position, rng.get() },
-                Rock{ rng, m_size / 2.0f, m_polygon.size() / 2, m_position, rng.get() }
+                Rock{ rng, m_size / 1.5f, m_polygon.size() / 2, m_position, (rng.get() * 2.0f - 1.0f) * 0.15f },
+                Rock{ rng, m_size / 1.5f, m_polygon.size() / 2, m_position, (rng.get() * 2.0f - 1.0f) * 0.15f }
             );
     }
 

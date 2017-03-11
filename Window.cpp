@@ -18,7 +18,7 @@ Window::Window()
     if (m_window == nullptr) throw std::runtime_error("Failed to create window.");
     glfwMakeContextCurrent(m_window);
 
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     // Initialize GL3W
     if (gl3wInit() != 0) throw std::runtime_error("Failed to initialize GL3W.");

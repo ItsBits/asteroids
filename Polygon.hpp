@@ -7,6 +7,8 @@
 
 #include "Vec2.hpp"
 
+//#define SOLID_COLLOR
+
 class Polygon
 {
 public:
@@ -132,7 +134,11 @@ public:
         }
 
         glBindVertexArray(m_VAO);
+#ifdef SOLID_COLLOR
+        glDrawArrays(GL_TRIANGLE_FAN, 0, static_cast<GLsizei>(m_vertices.size()));
+#else
         glDrawArrays(GL_LINE_LOOP, 0, static_cast<GLsizei>(m_vertices.size()));
+#endif
     }
 
     //==========================================================================
