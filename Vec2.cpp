@@ -38,16 +38,6 @@ Vec2 multiply(const Vec2 & v, const float m[4])
     };
 }
 
-float cross(const Vec2 & a, const Vec2 & b) // ??? false ???
-{
-    return a.y * b.x - a.x * b.y;
-}
-
-float cross_three(const Vec2 & a, const Vec2 & b, const Vec2 & c)  // ??? false ???
-{
-    return cross(Vec2{ b - a }, Vec2{ c - b });
-}
-
 bool counter_clock_wise(const Vec2 & a, const Vec2 & b, const Vec2 & c)
 {
     // ignoring the collinear case

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 #include "Vec2.hpp"
 
@@ -23,12 +22,6 @@ public:
         return result;
     }
 
-    void print()
-    {
-        std::cout << min.x << " | " << min.y << std::endl;
-        std::cout << max.x << " | " << max.y << std::endl;
-    }
-
     Vec2 getMin() const { return min; }
     Vec2 getMax() const { return max; }
 
@@ -42,6 +35,6 @@ AABB operator + (const AABB & aabb, const Vec2 & v);
 
 void position_size_from_AABB(const AABB & aabb, Vec2 & position, Vec2 & size);
 
-AABB compute_ABB_from_polygon(const std::vector<Vec2> & polygon);
+AABB compute_AABB_from_polygon(const std::vector<Vec2> & polygon);
 
 Vec2 AABB_to_size(const AABB & aabb);

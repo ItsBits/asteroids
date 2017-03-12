@@ -4,13 +4,20 @@ project(asteroids)
 set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCE_FILES
-        main.cpp
-        Window.cpp
-        Window.hpp
-        Keyboard.hpp
         ../gl3w/gl3w/build/src/gl3w.c
-        Keyboard.cpp Rock.hpp Vec2.hpp
-        Shader.cpp Shader.hpp Vec2Gen.hpp AABB.hpp Ship.hpp Projectile.hpp Polygon.hpp Vec2.cpp AABB.cpp)
+        main.cpp
+        Window.hpp Window.cpp
+        Keyboard.hpp Keyboard.cpp
+        Shader.hpp Shader.cpp
+        Vec2.hpp Vec2.cpp
+        AABB.hpp AABB.cpp
+        Rock.hpp
+        Vec2Gen.hpp
+        Ship.hpp
+        Projectile.hpp
+        Polygon.hpp
+        )
+
 add_executable(asteroids ${SOURCE_FILES})
 
 

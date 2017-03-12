@@ -22,7 +22,7 @@ void position_size_from_AABB(const AABB & aabb, Vec2 & position, Vec2 & size)
     size.y = (max.y - min.y) / 2.0f;
 }
 
-AABB compute_ABB_from_polygon(const std::vector<Vec2> & polygon)
+AABB compute_AABB_from_polygon(const std::vector<Vec2> & polygon)
 {
     Vec2 mn{  std::numeric_limits<float>::infinity(),  std::numeric_limits<float>::infinity() };
     Vec2 mx{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };

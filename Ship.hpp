@@ -40,7 +40,7 @@ public:
         // scale and rotate
         std::for_each(polygon.begin(), polygon.end(), [this](Vec2 & v){ v = multiply(v * m_size, m_rotation_matrix); });
 
-        const Vec2 size2 = AABB_to_size(compute_ABB_from_polygon(polygon));
+        const Vec2 size2 = AABB_to_size(compute_AABB_from_polygon(polygon));
         m_bounding_box = AABB{ { -size2.x, -size2.y }, size2 }; // symmetric AABB
     }
 
@@ -158,7 +158,7 @@ public:
         // calculate AABB
         std::vector<Vec2> polygon = m_polygon.vertices();
         std::for_each(polygon.begin(), polygon.end(), [this](Vec2 & v){ v = multiply(v * m_size, m_rotation_matrix); });
-        const Vec2 size = AABB_to_size(compute_ABB_from_polygon(polygon));
+        const Vec2 size = AABB_to_size(compute_AABB_from_polygon(polygon));
         m_bounding_box = AABB{ { -size.x, -size.y }, size }; // symmetric AABB
 
         // wrap/warp around
