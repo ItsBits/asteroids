@@ -168,7 +168,7 @@ public:
     }
 
 private:
-    Vec2 m_size;
+    Vec2 m_size; // TODO: generalize Object (AABB size position velocity rotation matrix...)
     Vec2 m_position;
     Vec2 m_velocity;
 

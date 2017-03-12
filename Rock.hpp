@@ -137,7 +137,7 @@ public:
     }
 
     //==========================================================================
-    void draw(GLint translation_uniform, GLint scale_uniform)
+    void draw(GLint translation_uniform, GLint scale_uniform) const
     {
         glUniform2f(scale_uniform, m_size, m_size);
         glUniform2f(translation_uniform, m_position.x, m_position.y);
@@ -165,44 +165,31 @@ public:
         return result;
     }
 
+    //==========================================================================
+    std::size_t size() const { return m_polygon.size(); }
 
-    /*
-     *
-     *
-     *
-     *
-     *
-     * refactor stuff below
-     */
-
-    float size() const { return m_size; } // TODO: when splitting kill if split blocks are smaller than 4 vertices
-
+    //==========================================================================
     std::tuple<int, Rock, Rock> split(Vec2Gen & rng)
     {
-        // TODO: actually split on vertices that are hit by the projectile
-        // TODO: when splitting kill if split blocks are smaller than 4 vertices
-        // aka. improve splitting
-
         const auto size = m_polygon.size();
 
-        if (size < 5)
-            return std::make_tuple(0, Rock{}, Rock{});
-        else if (size < 8)
-            return std::make_tuple(
-                1,
-                Rock{ rng, m_size / 1.5f, m_polygon.size() / 2, m_position, (rng.get() * 2.0f - 1.0f) * 0.15f },
-                Rock{}
-            );
-        else
-            return std::make_tuple(
-                2,
-                Rock{ rng, m_size / 1.5f, m_polygon.size() / 2, m_position, (rng.get() * 2.0f - 1.0f) * 0.15f },
-                Rock{ rng, m_size / 1.5f, m_polygon.size() / 2, m_position, (rng.get() * 2.0f - 1.0f) * 0.15f }
-            );
+        int count = 0;
+
+        Rock rock[2];
+
+        if (size > 4)
+        {
+            count++;
+            rock[0] = Rock{ rng, m_size / 1.5f, m_polygon.size() / 2, m_position, (rng.get() * 2.0f - 1.0f) * 0.15f };
+        }
+        if (size > 7)
+        {
+            count++;
+            rock[1] = Rock{ rng, m_size / 1.5f, m_polygon.size() / 2, m_position, (rng.get() * 2.0f - 1.0f) * 0.15f };
+        }
+
+        return std::make_tuple(count, rock[0], rock[1]);
     }
-
-
-
 
 private:
     float m_size; // TODO: class Object (vec2 size, vec2 position, vec2 velocity) and reuse it in all other similar classes (ship rock projectile)
